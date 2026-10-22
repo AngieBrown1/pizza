@@ -8,16 +8,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AngieBrown1/pizza.git"
+    "url": "git+https://github.com/tostrander/pizza-fa26.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "bugs": {
-    "url": "https://github.com/AngieBrown1/pizza/issues"
+    "url": "https://github.com/tostrander/pizza-fa26/issues"
   },
-  "homepage": "https://github.com/AngieBrown1/pizza#readme",
+  "homepage": "https://github.com/tostrander/pizza-fa26#readme",
   "dependencies": {
     "express": "^5.2.1"
   },

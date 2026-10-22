@@ -22,14 +22,15 @@
             <h2>Serving GRC students for 50 years!</h2>
             <hr>
             <p>We make the best pizza ever. Visit us today.</p>
-            <a id="contact-button" href="#" role="button">Contact Us</a>
+            <a id="contact-button" href="/contact-us" role="button">Contact Us</a>
         </div>
-        <form id="pizza-form" action="#" method="get">
+        <form id="pizza-form" action="/submit-order" method="post">
 
             <!-- Contact Info -->
             <fieldset>
                 <legend>Contact Info</legend>
-                <label for="fname">First Name:
+                
+                <label for="fname">First Name:</label>
                 <input type="text" id="fname" name="fname">
                 <span class="err" id="err-fname">First name is required</span>
                 
@@ -45,6 +46,7 @@
             <fieldset>
                 <legend>Select Pickup or Delivery</legend>
                 <span class="err" id="err-method">Select pickup or delivery</span>
+
                 <label for="pickup">
                     <input type="radio" id="pickup" name="method" value="pickup">
                     Pickup
@@ -79,6 +81,7 @@
             <fieldset>
                 <legend>Select Pizza Size</legend>
                 <span class="err" id="err-size">Select a size</span>
+
                 <select id="size" name="size">
                     <option value="none">-- Select a Size --</option>
                     <option value="small">Small</option>
