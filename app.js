@@ -2,13 +2,13 @@
 import express from 'express';
 import mysqul2 from 'mysql2';
 import dotenv from 'dotenv';
-
 dotenv.config();
+
+//import express session
+import session from 'express-session';
 
 // Create an instance of an
 // express application
-const app = express();
-
 const pool = mysqul2.createPool({
     // These values come from the .env file
     host: process.env.DB_HOST,
@@ -18,6 +18,23 @@ const pool = mysqul2.createPool({
     port: process.env.DB_PORT
 
 }).promise();
+
+const app = express();
+
+app.use(session({
+    secret:process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 1000 * 60 * 60}
+}));
+
+function requireLogin(req, res, next){
+    if (req.session.loggedIn) {
+        next();
+    } else {
+        res.redirect('/login');
+    }
+}
 
 // Define a port number for
 // our server to listen on
@@ -51,9 +68,43 @@ app.get('/confirm-order', (req, res) => {
     res.render('confirm');
 });*/
 
+//add route for login page at login route
+app.get('/login', (req, res) => {
+    res.render('login', { error: null });
+});
+
+// Process the login form
+// This handles POST requests to /login (when the user submits the form)
+app.post('/login', (req, res) => {
+ 
+    // Get the values the user typed into the form
+    const username = req.body.username;
+    const password = req.body.password;
+ 
+    // Compare them to the username and password stored in .env
+    if (username === process.env.ADMIN_USER &&
+        password === process.env.ADMIN_PASSWORD) {
+ 
+        // Correct! Remember that this user is logged in
+        req.session.loggedIn = true;
+ 
+        // Send them to the admin page
+        res.redirect('/admin');
+ 
+    } else {
+        // Wrong username or password - show the form again with an error
+        res.render('login', { error: 'Invalid username or password.' });
+    }
+});
+
+app.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/login');
+    })
+})
 
 // Add admin route
-app.get('/admin', async(req, res) => {
+app.get('/admin', requireLogin, async(req, res) => {
       try {
         // Fetch all orders from the database, newest first
         const orders =  await pool.query('SELECT * FROM orders ORDER BY timestamp DESC');
@@ -75,51 +126,51 @@ app.get('/admin', async(req, res) => {
 
 //Database test route
 // Database test - http://localhost:3000/db-test to test this route
-app.get('/db-test', async(req, res) => {
+// app.get('/db-test', async(req, res) => {
 
 
-    /* 
-     * 'async' tells JavaScript that this function will do asynchronous work
-     * Asynchronous means "it takes time to complete" (like waiting for
-     * database). By marking it 'async', we can use 'await' inside it
-     * 
-     * 'await' keyword means "pause here and wait for the database to respond"
-     * pool.query() returns a Promise ("I'll get back to you!")
-     * 'await' waits for the Promise to complete before moving on
-     * 
-     * pool.query() returns an ARRAY with 2 items:
-     *   [0] = the actual data rows from the database
-     *   [1] = metadata about the query (field names, types, etc.)
-     * So 'orders[0]' contains just the data rows, like:
-     * [ {id: 1, customer: 'John', pizza: 'Pepperoni'}, 
-     *   {id: 2, customer: 'Jane', pizza: 'Veggie'} ]
-     */
+//     /* 
+//      * 'async' tells JavaScript that this function will do asynchronous work
+//      * Asynchronous means "it takes time to complete" (like waiting for
+//      * database). By marking it 'async', we can use 'await' inside it
+//      * 
+//      * 'await' keyword means "pause here and wait for the database to respond"
+//      * pool.query() returns a Promise ("I'll get back to you!")
+//      * 'await' waits for the Promise to complete before moving on
+//      * 
+//      * pool.query() returns an ARRAY with 2 items:
+//      *   [0] = the actual data rows from the database
+//      *   [1] = metadata about the query (field names, types, etc.)
+//      * So 'orders[0]' contains just the data rows, like:
+//      * [ {id: 1, customer: 'John', pizza: 'Pepperoni'}, 
+//      *   {id: 2, customer: 'Jane', pizza: 'Veggie'} ]
+//      */
 
 
-    // try/catch block for error handling
-    try {
+//     // try/catch block for error handling
+//     try {
 
 
-        const orders = await pool.query('SELECT * FROM orders');
+//         const orders = await pool.query('SELECT * FROM orders');
 
 
-        // Send the orders data back to the browser as JSON
-        res.send(orders[0]);
+//         // Send the orders data back to the browser as JSON
+//         res.send(orders[0]);
 
 
-    } catch(err) {
+//     } catch(err) {
 
 
-        // If ANY error happened in the 'try' block, this code runs
-        // Log the error to the server console (for developers to see)
-        console.error('Database error:', err);
+//         // If ANY error happened in the 'try' block, this code runs
+//         // Log the error to the server console (for developers to see)
+//         console.error('Database error:', err);
 
 
-        // Send an error response to the browser
-        // status(500) means "Internal Server Error"
-        res.status(500).send('Database error: ' + err.message);
-    }
-});
+//         // Send an error response to the browser
+//         // status(500) means "Internal Server Error"
+//         res.status(500).send('Database error: ' + err.message);
+//     }
+// });
 
 app.post('/submit-order', async(req, res) => {
 
